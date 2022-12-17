@@ -1,0 +1,3 @@
+[submodule "yijisuk-GazeEstimationDemos"]
+	path = yijisuk-GazeEstimationDemos
+	url = https://github.com/yijisuk/GazeEstimationDemos.git
