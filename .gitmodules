@@ -4,3 +4,6 @@
 [submodule "xuanhua-GazeEstimationDemos"]
 	path = xuanhua-GazeEstimationDemos
 	url = https://github.com/LeeXuanHua/Eye-Gaze-Estimation-XH.git
+[submodule "yiji-GazeEstimationDemos"]
+	path = yiji-GazeEstimationDemos
+	url = https://github.com/yijisuk/GazeEstimationDemos.git
