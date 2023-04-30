@@ -7,3 +7,6 @@
 [submodule "yiji-GazeEstimationDemos"]
 	path = yiji-GazeEstimationDemos
 	url = https://github.com/yijisuk/GazeEstimationDemos.git
+[submodule "yijisuk-GazeML"]
+	path = yijisuk-GazeML
+	url = https://github.com/yijisuk/GazeML.git
