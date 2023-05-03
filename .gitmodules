@@ -1,12 +1,12 @@
 [submodule "yijisuk-GazeEstimationDemos"]
 	path = yijisuk-GazeEstimationDemos
 	url = https://github.com/yijisuk/GazeEstimationDemos.git
-[submodule "xuanhua-GazeEstimationDemos"]
-	path = xuanhua-GazeEstimationDemos
-	url = https://github.com/LeeXuanHua/Eye-Gaze-Estimation-XH.git
 [submodule "yiji-GazeEstimationDemos"]
 	path = yiji-GazeEstimationDemos
 	url = https://github.com/yijisuk/GazeEstimationDemos.git
 [submodule "yijisuk-GazeML"]
 	path = yijisuk-GazeML
 	url = https://github.com/yijisuk/GazeML.git
+[submodule "meky_xuanhua-MPIIGaze"]
+	path = meky_xuanhua-MPIIGaze
+	url = https://github.com/LeeXuanHua/Eye-Gaze-Estimation-MPIIGaze.git
