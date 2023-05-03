@@ -12,5 +12,3 @@ matplotlib | >=3.6.2
 ipython | >=8.7.0
 ipykernel | >=6.19.2
 numpy | >=1.23.5
-
-:exclamation: environment.yml & requirements.txt are for MacOS Vetura Version 13.0.1
