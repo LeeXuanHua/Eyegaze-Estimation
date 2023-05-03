@@ -1,4 +1,6 @@
 # ResNet + Tolerant after Talented
+- Knowledge Distillation
+- Cosine Similarity Pruning
 
 ## Requirements
 Package | Version
