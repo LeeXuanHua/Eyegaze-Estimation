@@ -25,8 +25,6 @@ parser.add_argument('--video_device_id', type=int, default=0)
 
 args = parser.parse_args()
 
-print(args)
-
 first_read = True
 cap = cv2.VideoCapture(args.video_device_id)
 ret, img = cap.read()

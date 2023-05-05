@@ -8,10 +8,6 @@ def find_abs_angle_difference(a, b):
     theta = torch.acos(cos_theta)
     return float(torch.sum(torch.abs(theta * 180 / math.pi)))
 
-def find_jitter_metric(a:torch.Tensor,b:torch.Tensor) -> float:
-    MSS = (torch.square(a) + torch.square(b)) /2
-    return float(torch.sum(MSS))
-
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
