@@ -7,6 +7,3 @@
 [submodule "yijisuk-GazeML"]
 	path = yijisuk-GazeML
 	url = https://github.com/yijisuk/GazeML.git
-[submodule "meky_xuanhua-MPIIGaze"]
-	path = meky_xuanhua-MPIIGaze
-	url = https://github.com/LeeXuanHua/Eye-Gaze-Estimation-MPIIGaze.git
