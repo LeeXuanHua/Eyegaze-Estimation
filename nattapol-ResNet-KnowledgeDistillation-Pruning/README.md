@@ -80,10 +80,10 @@ chmod +x train.sh
 | ResNet18 + KD + Prune        | 11.14                     | 12.74                    |
 
 ### Inference Speed
-|      Model      |   |  Params |  FLOPS  | Throughput (frames per second) |
-|:---------------:|:-:|:-------:|:-------:|:------------------------------:|
-| ResNet10 (wide) |   |  3.19 M | 32.45 G |              14.6              |
-|     ResNet18    |   | 11.17 M |  1.75 G |              13.2              |
+|      Model      |  Params |  FLOPS  | Throughput (frames per second) |
+|:---------------:|:-------:|:-------:|:------------------------------:|
+| ResNet10 (wide) |  3.19 M | 32.45 G |              14.6              |
+|     ResNet18    | 11.17 M |  1.75 G |              13.2              |
 
 *tested on M1 chip CPU*
 
