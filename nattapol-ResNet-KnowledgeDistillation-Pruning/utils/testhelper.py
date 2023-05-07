@@ -23,7 +23,7 @@ def test_epoch(data_test, testloader, model, epoch, train_config):
         gts = torch.Tensor([[yaws[i], pitchs[i]] for i in range(images.size(0))])
         images = images.to(train_config['device'])
         gts = torch.Tensor(gts).to(train_config['device'])
-        if train_config['model'] in ['ResNet10', 'ResNet10+']:
+        if train_config['model'] in ['resnet10', 'resnet10+', 'resnet10+P', 'resnet18', 'resnet18+', 'resnet18+P']:
             outputs, _, _, _, _ = model(images)
         else:
             outputs = model(images)
