@@ -15,35 +15,49 @@ from utils.loss.angular import AngularLoss
 from utils.loss.distillation import DistillationLoss
 from utils.trainhelper import *
 from utils.testhelper import *
+import argparse
+import os
 
-"""
-ENUM train_config {
-    'model': resnet10 | resnet18 | resnet50 | EfficientNet_b0 | EfficientNet_b1 | SimVit,
-    'epoch': int,
-    'res': Tuple[int, int],
-    'learning_rate': float,
-    'dataset': 'Mpiigaze' | 'Columbia',
-    'batch_size': int,
-    'augmentation': bool,
-    'teacher_weight_path'?: '/path/to/teacher/'  # in case of loss == DistillationLoss()
-    'testIdx': tuple[..., int],
-    'loss': nn.MSELoss() | DistillationLoss() | AngularLoss(),
-    'device': torch.device("your cuda/cpu device"),
-}
-"""
+PROJECT_PATH = os.getenv('PROJECT_PATH')
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument('--model', type=str, help="resnet10 | resnet18", default='resnet10')
+parser.add_argument('--lr', type=float, help="Learning rate", default=1e-5)
+parser.add_argument('--dataset', type=str, help="Mpiigaze | Columbia", default='Columbia')
+parser.add_argument('--epoch', type=int, default=40)
+parser.add_argument('--batch_size', type=int, default=32)
+parser.add_argument('--augmentation', action=argparse.BooleanOptionalAction)
+parser.add_argument('--device', type=str, default='cuda:0')
+parser.add_argument('--id_test', type=int, default=0)
+
+args = parser.parse_args()
+
+# 5-fold split for Columbia
+fold = []
+fold.append(tuple((7, 11, 53, 18, 17, 29, 30, 33, 22, 46, 32)))
+fold.append(tuple((51, 1, 45, 20, 25, 2, 14, 37, 10, 27, 6)))
+fold.append(tuple((55, 9, 8, 49, 16, 4, 28, 52, 19, 39, 23)))
+fold.append(tuple((50, 47, 5, 54, 34, 40, 36, 13, 38, 42, 41)))
+fold.append(tuple((21, 0, 12, 15, 48, 24, 44, 35, 43, 26, 31, 3)))
+
+if args.dataset == 'Mpiigaze':
+    if args.id_test > 14 or args.id_test < 0:
+        raise Exception(f"Test id should be between [0,14] for Mpiigaze")
+elif args.dataset=='Columbia':
+    if args.id_test > 4 or args.id_test < 0:
+        raise Exception(f"Test id should be between [0,4] for Columbia")
 
 train_config = {
-    'model': 'resnet10',
-    'epoch': 40,
+    'model': args.model,
+    'epoch': args.epoch,
     'res': (224, 224),
-    'learning_rate': 1e-5,
-    'dataset': 'Mpiigaze',
-    'batch_size': 32,
-    'augmentation': True,
-    'teacher_weight_path': '/path/to/teacher/model',
-    'testIdx': tuple((14,)),
+    'learning_rate': args.lr,
+    'dataset': args.dataset,
+    'batch_size': args.batch_size,
+    'augmentation': args.augmentation,
     'loss': nn.MSELoss(),
-    'device': torch.device("cuda:0"),
+    'device': torch.device(args.device),
 }
 
 def main(train_config):
@@ -60,6 +74,7 @@ def main(train_config):
     
     number_of_epoch = train_config['epoch']
     model.to(train_config['device'])
+    print("\t\tepoch\t\tloss\t\ttrainerror\ttesterror\ttime")
     for epoch in range(number_of_epoch):
         model.train(True)
         avg_loss = train_epoch(data_train, trainloader, 
@@ -68,26 +83,41 @@ def main(train_config):
         model.train(False)
         test_error = test_epoch(data_test, testloader, model, epoch, train_config)
         train_error = test_epoch(data_train, trainloader, model, epoch, train_config)
-        
-        epoch_summary =  f'epoch: {epoch+1} loss: {str(avg_loss)[:5]}'
-        epoch_summary += f' train error: {str(float(train_error))[:5]}'
-        epoch_summary += f' test_error= {str(float(test_error))[:5]}'
-        epoch_summary += f' time: {int(time.time()-starttime) // 60}'
-        print(epoch_summary)
 
-    file_name = f"/path/to/model"
-    torch.save(model.state_dict(), file_name)
+        epoch_summary =  f'[{args.model}]\t{epoch+1}\t\t{str(avg_loss)[:7]}'
+        epoch_summary += f'\t\t{str(float(train_error))[:7]}'
+        epoch_summary += f'\t\t{str(float(test_error))[:7]}'
+        epoch_summary += f'\t\t{int(time.time()-starttime) // 60}'
+        print(epoch_summary)
+        
+    file_path = f"{PROJECT_PATH}/results/pretrained/{args.model}"
+    file_name = file_path + f'/{args.model}-{args.id_test}-{args.dataset}'
+    print(f'[{args.model}] saved in {file_path}.pt')
+    if not os.path.exists(file_path):
+        os.makedirs(file_path)
+    torch.save(model.state_dict(), file_name+'.pt')
     model_summary = [train_config['model'], train_config['learning_rate'], 
-                        train_config['batch_size'], train_config['epoch'], 
-                        False, count_parameters(model), 
-                        file_name, str(float(test_error))[:5], 
-                        train_config['dataset'], len(data_train), 
-                        train_config['dataset'], str(int(time.time()-starttime)/60)[:5],
-                        str(train_config['loss']), str(train_config['testIdx'][0])]
-    with open('/path/to/log/', 'a') as f:
+                        train_config['batch_size'], train_config['epoch'],  
+                        file_name+'.pt', str(float(test_error))[:5], 
+                        train_config['dataset']]
+    with open(f'{PROJECT_PATH}/results/{args.model}.csv', 'a') as f:
         writerObj = writer(f)
         writerObj.writerow(model_summary)
+    return file_path+'.pt'
     
 if __name__ == '__main__':
+    if train_config['dataset'] == 'Mpiigaze':
+        train_config['testIdx'] = tuple((args.id_test,))
+    else:
+        train_config['testIdx'] = fold[args.id_test]
+    
+    print("Train without Knowledge Distillation")
     print(train_config)
-    main(train_config)
+    teacher_weight_path = main(train_config)
+    
+    print("Train with Knowledge Distillation")
+    train_config['model'] += '+'
+    train_config['loss'] = DistillationLoss()
+    train_config['epoch'] = int(train_config['epoch'] / 4)
+    _ = main(train_config)
+    print(" \t-- Training Finished -- ")

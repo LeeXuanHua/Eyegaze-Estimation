@@ -8,6 +8,10 @@ def find_abs_angle_difference(a, b):
     theta = torch.acos(cos_theta)
     return float(torch.sum(torch.abs(theta * 180 / math.pi)))
 
+def find_jitter_metric(a:torch.Tensor,b:torch.Tensor) -> float:
+    MSS = (torch.square(a) + torch.square(b)) /2
+    return float(torch.sum(MSS))
+
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
@@ -19,7 +23,7 @@ def test_epoch(data_test, testloader, model, epoch, train_config):
         gts = torch.Tensor([[yaws[i], pitchs[i]] for i in range(images.size(0))])
         images = images.to(train_config['device'])
         gts = torch.Tensor(gts).to(train_config['device'])
-        if train_config['model'] in ['ResNet10', 'ResNet10+']:
+        if train_config['model'] in ['resnet10', 'resnet10+', 'resnet10+P', 'resnet18', 'resnet18+', 'resnet18+P']:
             outputs, _, _, _, _ = model(images)
         else:
             outputs = model(images)

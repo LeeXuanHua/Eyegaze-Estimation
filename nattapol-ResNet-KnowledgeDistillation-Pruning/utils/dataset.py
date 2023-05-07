@@ -24,7 +24,6 @@ class ColumbiaFaceDataset(Dataset):
         self.person_id = person_id
         self.C = 1 if gray else 3
         self.outSize = outSize
-        self.preprocess = transforms.Normalize([0.5] * self.C, [0.5] * self.C)
         self._augmentation()
         self.load_data()
         
@@ -46,23 +45,33 @@ class ColumbiaFaceDataset(Dataset):
         for each in os.listdir(self.path):
             if each[:2] == '00' and int(each[2:4]) in self.person_id:
                 self.files_path.extend([f.path for f in os.scandir(self.path+'/'+each+'/') 
-                                        if f.is_file() and f.path[-8:]=='_new.jpg'])
+                                        if f.is_file() and f.path[-5:]=='H.jpg'])
                 
         self.images, self.labels = [], []
         for person in self.files_path:
             with Image.open(person) as image:
-                if self.gray: image = image.convert("L")
+                # since the face center is at the same place, we can 
+                # extract the face by directly cropping at the same place.
+                image = transforms.Resize(size=(864,576))(image)
+                image = transforms.CenterCrop(size=(250,250))(image)
+                image = transforms.Resize(size=(224,224))(image)
+                
+                if self.gray: 
+                    image = image.convert("L")
                 image = transforms.ToTensor()(image)
-                image_processed = self.preprocess(image)
+                image_processed = transforms.Normalize([0.5] * self.C, [0.5] * self.C)(image)
+                
                 yaw, pitch = self.read_angles(person)
                 
                 self.images.append(image_processed)
                 self.labels.append([yaw, pitch])
+                del image
+                del image_processed
         
     def read_angles(self, name):
-        filter = name.split("/")[-1].split("_")[3:]
-        yaw = float(filter[0][:-1])
-        pitch = float(filter[1].replace("H", ''))
+        filter = name.split("/")[-1].split("_")
+        yaw = float(filter[3][:-1])
+        pitch = float(filter[4].replace("H.jpg", ''))
         return yaw, pitch
     
     def __getitem__(

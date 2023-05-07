@@ -1,16 +1,12 @@
 import torch
 import torch.nn as nn
-from models.resnet10 import resnet10
-from models.simvit import simvit
-from torchvision.models import resnet50
-from torchvision.models import resnet18
-from torchvision.models import efficientnet_b0
-from torchvision.models import efficientnet_b1
-from dataset import *
-from torchvision.ops import Conv2dNormActivation
+from utils.models.resnet import resnet10, resnet18
+from utils.models.simvit import simvit
+from utils.dataset import ColumbiaFaceDataset, MpiigazeFaceDataset
 from torch.utils.data import DataLoader
 import math
 from utils.loss.distillation import DistillationLoss
+import os
 
 def find_abs_angle_difference(a, b):
     cos_theta = torch.cos(a/180 * math.pi) * torch.cos(b/180 * math.pi) 
@@ -79,53 +75,16 @@ def GetModel(train_config):
     model_name = train_config['model'] if train_config['model'][-1] != '+' else train_config['model'][:-1]
     out_channels = 2
     
-    if train_config['model'][-1] == '+' ^ train_config['loss'] == DistillationLoss():
+    if (train_config['model'][-1] == '+') ^ (train_config['loss'] == DistillationLoss()):
         raise Exception("Distillation model if only if using DistillationLoss()")
-    
-    if str(train_config['loss']) in ['GaussianLoss()', 'LogitLoss()']:
-        out_channels = 1000
         
     if (model_name == 'resnet10'):
         model = resnet10(channels=64, out_channels=out_channels, input_size=train_config['res'])
         
     elif (model_name == 'resnet18'):
-        assert train_config['res'] == (224,224), f'input size not supported'
         model = resnet18()
-        model.conv1 = nn.Conv2d(1, 64, kernel_size=(7,7), stride=(2,2), padding=(3,3))
-        model.fc = nn.Linear(512, out_channels)
-        
-    elif (model_name == 'resnet50'):
-        assert train_config['res'] == (224,224), f'input size not supported'
-        model = resnet50()
-        model.conv1 = nn.Conv2d(1, 64, kernel_size=(7,7), stride=(2,2), padding=(3,3))
-        model.fc = nn.Linear(512, out_channels)
-        
-    elif (model_name == 'EfficientNet_b0'):
-        assert train_config['res'] == (224,224), f'input size not supported'
-        model = efficientnet_b0()
-        model.features[0] = Conv2dNormActivation(
-                                1, 32, kernel_size=3, stride=2, 
-                                norm_layer=nn.BatchNorm2d, activation_layer=nn.SiLU
-                            )
-        model.classifier = nn.Sequential(
-                                nn.Dropout(p=0.1, inplace=True),
-                                nn.Linear(1280, out_channels, bias=True)
-                            )
-        
-    elif (model_name == 'EfficientNet_b1'):
-        assert train_config['res'] == (224,224), f'input size not supported'
-        model = efficientnet_b1()
-        model.features[0] = Conv2dNormActivation(
-                                1, 32, kernel_size=3, stride=2, 
-                                norm_layer=nn.BatchNorm2d, activation_layer=nn.SiLU
-                            )
-        model.classifier = nn.Sequential(
-                                nn.Dropout(p=0.1, inplace=True),
-                                nn.Linear(1280, out_channels, bias=True)
-                            )
     
     elif (model_name == 'SimVit'):
-        assert train_config['res'] == (224,224), f'input size not supported'
         model = simvit()
     
     else: 
@@ -142,10 +101,10 @@ def GetDataset(train_config):
         testIdx = tuple(train_config['testIdx'])
         trainIdx = set(idxList) - set(tuple(testIdx))
         
-        data_train = ColumbiaFaceDataset('/root/Columbia Gaze Data Set', 
+        data_train = ColumbiaFaceDataset(os.getenv('COLUMBIA_PATH'), 
                                          trainIdx, gray=True, 
                                          augmentation=train_config['augmentation'])
-        data_test = ColumbiaFaceDataset('/root/Columbia Gaze Data Set', testIdx, 
+        data_test = ColumbiaFaceDataset(os.getenv('COLUMBIA_PATH'), testIdx, 
                                         gray=True, augmentation=False)
         
         trainloader = DataLoader(data_train, batch_size=train_config['batch_size'], 
@@ -159,10 +118,10 @@ def GetDataset(train_config):
         testIdx = tuple(train_config['testIdx'])
         trainIdx = set(idxList) - set(tuple(testIdx))
         
-        data_train = MpiigazeFaceDataset('/root/MPIIGaze_dataset/face/MPIIFaceGaze.h5', 
+        data_train = MpiigazeFaceDataset(os.getenv('MPII_PATH'), 
                                          trainIdx, 
                                          augmentation=train_config['augmentation'])
-        data_test = MpiigazeFaceDataset('/root/MPIIGaze_dataset/face/MPIIFaceGaze.h5', 
+        data_test = MpiigazeFaceDataset(os.getenv('MPII_PATH'), 
                                         testIdx, augmentation=False)
         
         trainloader = DataLoader(data_train, batch_size=train_config['batch_size'], 
