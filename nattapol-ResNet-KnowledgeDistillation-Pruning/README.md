@@ -87,6 +87,11 @@ chmod +x train.sh
 
 *tested on M1 chip CPU*
 
+## Video test
+```bash
+python video_test.py --proj_path=$PWD --model=resnet18 --kd --prune
+```
+
 ## References
 - Guo, T., Liu, Y., Zhang, H., Liu, X., Kwak, Y., In Yoo, B. & Choi, C. (2019). [A generalized and robust method towards practical gaze estimation on smart phone. In Proceedings of the IEEE/CVF International Conference on Computer Vision Workshops](http://openaccess.thecvf.com/content_ICCVW_2019/html/GAZE/Guo_A_Generalized_and_Robust_Method_Towards_Practical_Gaze_Estimation_on_ICCVW_2019_paper.html).
 - Furlanello, T., Lipton, Z., Tschannen, M., Itti, L., & Anandkumar, A. (2018, July). [Born again neural networks](http://proceedings.mlr.press/v80/furlanello18a.html). In International Conference on Machine Learning (pp. 1607-1616). PMLR
