@@ -50,8 +50,8 @@ see ```requirements.txt```
     `-- weight_prune.py
 ```
 
+## Load Dataset and Train the model
 ```bash
-conda activate <your-env>
 chmod +x setup.sh
 chmod +x train.sh
 ./setup
